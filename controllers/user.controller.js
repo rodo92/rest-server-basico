@@ -2,28 +2,43 @@ const { response, request } = require('express');
 const Usuario = require('../models/usuario');
 const bcryptjs = require('bcryptjs');
 
-const usuariosGet = (req = request, res = response) => {
-  const { q, nombre, apikey } = req.query;
+const usuariosGet = async (req = request, res = response) => {
+  const { limite = 5, desde = 0 } = req.query;
+  const query = { estado: true };
+
+  const [total, usuarios] = await Promise.all([
+    Usuario.countDocuments(query),
+    Usuario.find(query)
+      .skip(Number(desde))
+      .limit(Number(limite))
+  ]);
+
   res.json({
-    msg: 'get API - controller',
-    q, nombre, apikey
+    total, usuarios
   });
 };
 
 
-const usuariosPut = (req = request, res = response) => {
-  const id = req.params.id
-  res.json({
-    msg: 'put API - controller',
-    id
-  })
+const usuariosPut = async (req = request, res = response) => {
+  const id = req.params.id;
+  const { _id, password, google, correo, ...resto } = req.body;
+
+  if (password) {
+    // Encriptar contrasena
+    const salt = bcryptjs.genSaltSync();
+    resto.password = bcryptjs.hashSync(password, salt);
+  }
+
+  const usuario = await Usuario.findOneAndUpdate(id, resto);
+
+  res.json(usuario);
 };
 
 const usuariosPost = async (req = request, res = response) => {
+
   const { nombre, correo, password, rol } = req.body;
   const usuario = new Usuario({ nombre, correo, password, rol });
 
-  // Verificacion de correo
   // Encriptar contrasena
   const salt = bcryptjs.genSaltSync();
   usuario.password = bcryptjs.hashSync(password, salt);
@@ -37,10 +52,15 @@ const usuariosPost = async (req = request, res = response) => {
   })
 };
 
-const usuariosDelete = (req = request, res = response) => {
-  res.json({
-    msg: 'delete API - controller'
-  })
+const usuariosDelete = async (req = request, res = response) => {
+  const id = req.params.id;
+
+  // Borrado fisico
+  // const usuario = await Usuario.findByIdAndDelete(id);
+
+  const usuario = await Usuario.findByIdAndUpdate(id, { estado: false });
+
+  res.json(usuario)
 };
 
 const usuariosPatch = (req = request, res = response) => {
