@@ -12,7 +12,7 @@ router.post('/login', [
 ], login);
 
 router.post('/google', [
-  check('id_token', 'el token es necesario').isEmpty(),
+  check('id_token', 'el token es necesario').not().isEmpty(),
   validarCampos
 ], googleSignIn);
 

@@ -8,7 +8,8 @@ async function googleVerify(token = '') {
     audience: process.env.GOOGLE_CLIENTE_ID
   });
   const payload = ticket.getPayload();
-  console.log(payload);
+  const { name, picture, email } = ticket.getPayload();
+  return { name, picture, email };
 }
 
 module.exports = {
