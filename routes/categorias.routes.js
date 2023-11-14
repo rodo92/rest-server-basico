@@ -16,7 +16,7 @@ router.get('/', obtenerCategorias);
 
 /** Obtener una categorias por id - publico */
 router.get('/:id', [
-  check('id', 'No es un ID valido').isMongoId().bail().custom(existeCategoriaPorId)
+  check('id', 'No es un ID valido').isMongoId()
 ], obtenerCategoria);
 
 /** Crear categorias - privado - cualquier persona con token valido */
