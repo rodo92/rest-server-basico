@@ -21,7 +21,7 @@ const obtenerCategorias = async (req = request, res = response) => {
 }
 const obtenerCategoria = async (req = request, res = response) => {
   const { id } = req.params;
-  const categoria = await Categoria.findById(id).populate('usuario', 'nombre');
+  const categoria = await Categoria.find(id).populate('usuario', 'nombre');
 
   res.json(categoria);
 }
@@ -53,8 +53,29 @@ const crearCategoria = async (req = request, res = response) => {
 
 }
 
+const actualizarCategoria = async (req = request, res = response) => {
+  const { id } = req.params;
+  const { estado, usuario, ...data } = req.body;
+
+  data.nombre = data.nombre.toUpperCase();
+  data.usuario = req.usuario._id;
+
+  const categoria = await Categoria.findOneAndUpdate(id, data, { new: true });
+  res.json(categoria);
+}
+
+const categoriaEliminar = async (req = request, res = response) => {
+  const id = req.params.id;
+  const usuarioAutenticado = req.usuario;
+  const categoria = await Categoria.findByIdAndUpdate(id, { estado: false }, { new: true });
+
+  res.json({ categoria, usuarioAutenticado })
+};
+
 module.exports = {
   crearCategoria,
   obtenerCategorias,
-  obtenerCategoria
+  obtenerCategoria,
+  actualizarCategoria,
+  categoriaEliminar
 };
